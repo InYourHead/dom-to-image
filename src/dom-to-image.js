@@ -24,11 +24,13 @@
         toJpeg: toJpeg,
         toBlob: toBlob,
         toPixelData: toPixelData,
+        getFontsBefore: getFontsBefore,
         impl: {
             fontFaces: fontFaces,
             images: images,
             util: util,
             inliner: inliner,
+            cachedFonts: cachedFonts,
             options: {}
         }
     };
@@ -43,7 +45,7 @@
      * Allow to get fonts before creating image
      */
     function getFontsBefore() {
-        cacheStyles = fontFaces.resolveAll();
+        cachedFonts = fontFaces.resolveAll();
     }
     /**
      * @param {Node} node - The DOM Node object to render
