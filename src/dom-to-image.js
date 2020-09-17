@@ -8,6 +8,8 @@
 
     var cacheForResponses = [];
 
+    
+    var cachedFonts;
     // Default impl options
     var defaultOptions = {
         // Default is to fail on error, no placeholder
@@ -38,6 +40,12 @@
 
 
     /**
+     * Allow to get fonts before creating image
+     */
+    function getFontsBefore() {
+        cacheStyles = fontFaces.resolveAll();
+    }
+    /**
      * @param {Node} node - The DOM Node object to render
      * @param {Object} options - Rendering options
      * @param {Function} options.filter - Should return true if passed node should be included in the output
@@ -52,6 +60,7 @@
                 default = unset = no scaling applied = 1.0.
      * @param {String} options.imagePlaceholder - dataURL to use as a placeholder for failed images, default behaviour is to fail fast on images we can't fetch
      * @param {Boolean} options.cacheBust - set to true to cache bust by appending the time to the request url
+     * @param {Boolean} options.cachedFonts - set to true to download fonts before
      * @return {Promise} - A promise that is fulfilled with a SVG image data URL
      * */
     function toSvg(node, options) {
@@ -61,7 +70,7 @@
             .then(function (node) {
                 return cloneNode(node, options.filter, true);
             })
-            .then(embedFonts)
+            .then(options.cachedFonts ? embedFontsAlreadyDownloaded : embedFonts)
             .then(inlineImages)
             .then(applyOptions)
             .then(function (clone) {
@@ -339,6 +348,16 @@
 
     function embedFonts(node) {
         return fontFaces.resolveAll()
+            .then(function (cssText) {
+                var styleNode = document.createElement('style');
+                node.appendChild(styleNode);
+                styleNode.appendChild(document.createTextNode(cssText));
+                return node;
+            });
+    }
+
+    function embedFontsAlreadyDownloaded(node) {
+        return cachedFonts
             .then(function (cssText) {
                 var styleNode = document.createElement('style');
                 node.appendChild(styleNode);
